@@ -1,15 +1,23 @@
 """Entry point for the Days Counter application."""
 
+import os
 import sys
 from pathlib import Path
 from app.model import EventStore
 from app.ui import MainWindow
 
 
+def get_events_file() -> Path:
+    if getattr(sys, "frozen", False):
+        app_data = Path(os.environ.get(
+            "APPDATA", Path.home() / "AppData" / "Roaming"
+        ))
+        return app_data / "DaysCounter" / "events.json"
+    return Path(__file__).parent / "data" / "events.json"
+
+
 def main() -> None:
-    base_dir = Path(__file__).parent
-    data_dir = base_dir / "data"
-    store = EventStore(data_dir / "events.json")
+    store = EventStore(get_events_file())
     app = MainWindow(store)
     app.run()
 

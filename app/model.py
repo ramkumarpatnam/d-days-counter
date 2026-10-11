@@ -15,6 +15,7 @@ class Event:
     """A single countdown/event target."""
     label: str
     target_date: str                 # ISO date string YYYY-MM-DD
+    color: str = "blue"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     created_at: str = field(
         default_factory=lambda: datetime.now().isoformat(timespec="seconds")

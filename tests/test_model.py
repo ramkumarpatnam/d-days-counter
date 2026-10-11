@@ -14,6 +14,7 @@ def test_event_defaults():
     ev = Event(label="Birthday", target_date="2025-01-01")
     assert ev.label == "Birthday"
     assert ev.target_date == "2025-01-01"
+    assert ev.color == "blue"
     assert ev.id  # non-empty uuid
     assert ev.created_at  # set
 
@@ -66,15 +67,30 @@ def test_store_load_corrupt_returns_empty(tmp_path: Path):
 def test_store_save_then_load_roundtrip(tmp_path: Path):
     store = EventStore(tmp_path / "events.json")
     events = [
-        Event(label="Past", target_date="2000-01-01"),
-        Event(label="Future", target_date="2099-12-31"),
+        Event(label="Past", target_date="2000-01-01", color="rose"),
+        Event(label="Future", target_date="2099-12-31", color="mint"),
     ]
     store.save(events)
     loaded = store.load()
     assert len(loaded) == 2
     assert loaded[0].label == "Past"
     assert loaded[0].target_date == "2000-01-01"
+    assert loaded[0].color == "rose"
     assert loaded[1].label == "Future"
+    assert loaded[1].color == "mint"
+
+
+def test_store_load_old_event_without_color_uses_default(tmp_path: Path):
+    events_file = tmp_path / "events.json"
+    events_file.write_text(
+        '[{"label":"Old event","target_date":"2025-01-01","id":"old","created_at":"2024-01-01"}]',
+        encoding="utf-8",
+    )
+
+    loaded = EventStore(events_file).load()
+
+    assert len(loaded) == 1
+    assert loaded[0].color == "blue"
 
 
 def test_store_save_creates_directory(tmp_path: Path):
